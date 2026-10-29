@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مَلاَذ | Malaz - إدارة الميزانية المنزلية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        malaz: {
+                            bg: '#0d1f1c',
+                            card: '#162e29',
+                            cream: '#f3ebd9',
+                            gold: '#f4ad42',
+                            accent: '#1e3d37',
+                            border: '#2a4f47'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0d1f1c;
+            color: #f3ebd9;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col selection:bg-malaz-gold selection:text-malaz-bg">
+
+    <!-- Header / Navigation -->
+    <header class="bg-malaz-card border-b border-malaz-border shadow-xl sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <img src="malaz-icon-square.svg" alt="Malaz Icon" class="w-10 h-10 rounded-xl shadow-md border border-malaz-gold/30 object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%230d1f1c\'><rect width=\'100\' height=\'100\' fill=\'%230d1f1c\'/><path d=\'M25 80 V50 A25 25 0 0 1 75 50 V80 M35 80 V50 A15 15 0 0 1 65 50 V80\' stroke=\'%23f3ebd9\' stroke-width=\'8\' fill=\'none\' stroke-linecap=\'round\'/><circle cx=\'50\' cy=\'60\' r=\'7\' fill=\'%23f4ad42\'/></svg>'">
+                <div>
+                    <div class="flex items-baseline space-x-2 space-x-reverse">
+                        <h1 class="text-xl font-black text-malaz-cream tracking-wide">مَلاَذ</h1>
+                        <span class="text-xs font-bold text-malaz-gold tracking-widest uppercase">MALAZ</span>
+                    </div>
+                    <p class="text-[10px] text-malaz-cream/60">نسأل الله البركة برزقكم</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-2 space-x-reverse text-sm">
+                <button onclick="exportData()" class="bg-malaz-bg hover:bg-malaz-accent text-malaz-cream px-3 py-1.5 rounded-xl border border-malaz-border flex items-center space-x-1.5 space-x-reverse transition">
+                    <i class="fa-solid fa-download text-xs text-malaz-gold"></i>
+                    <span class="hidden sm:inline">حفظ نسخة</span>
+                </button>
+                <label class="bg-malaz-bg hover:bg-malaz-accent text-malaz-cream px-3 py-1.5 rounded-xl border border-malaz-border flex items-center space-x-1.5 space-x-reverse cursor-pointer transition">
+                    <i class="fa-solid fa-upload text-xs text-malaz-gold"></i>
+                    <span class="hidden sm:inline">استعادة</span>
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+                </label>
+                <button onclick="window.print()" class="bg-malaz-gold hover:bg-amber-500 text-malaz-bg font-bold px-3.5 py-1.5 rounded-xl transition flex items-center space-x-1.5 space-x-reverse shadow-lg shadow-malaz-gold/10">
+                    <i class="fa-solid fa-print text-xs"></i>
+                    <span class="hidden sm:inline">طباعة</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Top Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-malaz-card p-5 rounded-2xl border border-malaz-border shadow-lg flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-malaz-cream/60 uppercase tracking-wider">إجمالي الدخل</p>
+                    <h3 id="totalIncomeText" class="text-2xl font-extrabold text-emerald-400 mt-1">0 ل.س</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+
+            <div class="bg-malaz-card p-5 rounded-2xl border border-malaz-border shadow-lg flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-malaz-cream/60 uppercase tracking-wider">إجمالي المصاريف</p>
+                    <h3 id="totalExpenseText" class="text-2xl font-extrabold text-rose-400 mt-1">0 ل.س</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+            </div>
+
+            <div class="bg-malaz-card p-5 rounded-2xl border border-malaz-border shadow-lg flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-malaz-cream/60 uppercase tracking-wider">الرصيد المتبقي</p>
+                    <h3 id="netBalanceText" class="text-2xl font-extrabold text-malaz-cream mt-1">0 ل.س</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-malaz-gold/10 border border-malaz-gold/20 text-malaz-gold flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+            </div>
+
+            <div class="bg-malaz-card p-5 rounded-2xl border border-malaz-border shadow-lg flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-malaz-cream/60 uppercase tracking-wider">نسبة التوفير</p>
+                    <h3 id="savingsRateText" class="text-2xl font-extrabold text-amber-300 mt-1">0%</h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-300 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-2 space-x-reverse border-b border-malaz-border no-print">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="py-2.5 px-4 font-semibold text-sm border-b-2 border-malaz-gold text-malaz-gold">لوحة التحكم</button>
+            <button onclick="switchTab('transactions')" id="tab-transactions" class="py-2.5 px-4 font-semibold text-sm text-malaz-cream/60 hover:text-malaz-cream">سجل المعاملات</button>
+            <button onclick="switchTab('budgets')" id="tab-budgets" class="py-2.5 px-4 font-semibold text-sm text-malaz-cream/60 hover:text-malaz-cream">إدارة الميزانيات</button>
+        </div>
+
+        <!-- Tab 1: Dashboard View -->
+        <div id="view-dashboard" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add Transaction Form -->
+                <div class="bg-malaz-card p-6 rounded-2xl border border-malaz-border shadow-lg no-print">
+                    <h2 class="text-lg font-bold text-malaz-cream mb-4 flex items-center">
+                        <i class="fa-solid fa-circle-plus text-malaz-gold ml-2"></i> إضافة معاملة جديدة
+                    </h2>
+                    <form id="transactionForm" onsubmit="handleAddTransaction(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-malaz-cream/70 mb-1">نوع المعاملة</label>
+                            <select id="type" onchange="updateCategoryDropdown()" class="w-full bg-malaz-bg border border-malaz-border text-malaz-cream rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-malaz-gold">
+                                <option value="expense">مصروف</option>
+                                <option value="income">دخل / إيراد</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-malaz-cream/70 mb-1">المبلغ (ل.س)</label>
+                            <input type="number" id="amount" required min="1" placeholder="مثال: 50000" class="w-full bg-malaz-bg border border-malaz-border text-malaz-cream rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-malaz-gold placeholder-malaz-cream/30">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-malaz-cream/70 mb-1">التصنيف</label>
+                            <select id="category" class="w-full bg-malaz-bg border border-malaz-border text-malaz-cream rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-malaz-gold">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-malaz-cream/70 mb-1">الوصف / ملاحظة</label>
+                            <input type="text" id="description" placeholder="تفاصيل سريعة..." class="w-full bg-malaz-bg border border-malaz-border text-malaz-cream rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-malaz-gold placeholder-malaz-cream/30">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-malaz-cream/70 mb-1">التاريخ</label>
+                            <input type="date" id="date" required class="w-full bg-malaz-bg border border-malaz-border text-malaz-cream rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-malaz-gold">
+                        </div>
+                        <button type="submit" class="w-full bg-malaz-gold hover:bg-amber-500 text-malaz-bg font-extrabold py-2.5 rounded-xl text-sm transition shadow-lg shadow-malaz-gold/10">
+                            حفظ المعاملة
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Expense Distribution Chart -->
+                <div class="bg-malaz-card p-6 rounded-2xl border border-malaz-border shadow-lg lg:col-span-2 flex flex-col justify-between">
+                    <h2 class="text-lg font-bold text-malaz-cream mb-4 flex items-center">
+                        <i class="fa-solid fa-chart-pie text-malaz-gold ml-2"></i> توزيع المصاريف حسب التصنيف
+                    </h2>
+                    <div class="relative flex-grow min-h-[250px] flex items-center justify-center">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Financial Assistant Insights Section -->
+            <div class="bg-malaz-card border border-malaz-gold/30 p-6 rounded-2xl shadow-xl relative overflow-hidden">
+                <div class="relative z-10 space-y-3">
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <span class="bg-malaz-gold/20 text-malaz-gold text-xs px-2.5 py-1 rounded-full font-bold border border-malaz-gold/30">
+                            <i class="fa-solid fa-wand-magic-sparkles ml-1"></i> المساعد الذكي
+                        </span>
+                        <h3 class="font-bold text-lg text-malaz-cream">التحليل المالي والنصائح المخصصة</h3>
+                    </div>
+                    <div id="aiInsightsContainer" class="text-sm text-malaz-cream/80 space-y-2 leading-relaxed">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Transactions List View -->
+        <div id="view-transactions" class="hidden bg-malaz-card p-6 rounded-2xl border border-malaz-border shadow-lg space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 no-print">
+                <h2 class="text-lg font-bold text-malaz-cream">سجل المعاملات اليومية</h2>
+                <input type="text" id="searchInput" oninput="renderTransactions()" placeholder="بحث في الملاحظات والتصنيفات..." class="bg-malaz-bg border border-malaz-border text-malaz-cream rounded-xl px-4 py-2 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-malaz-gold placeholder-malaz-cream/30">
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="border-b border-malaz-border text-xs text-malaz-cream/50 font-bold uppercase">
+                            <th class="py-3 px-2">التاريخ</th>
+                            <th class="py-3 px-2">النوع</th>
+                            <th class="py-3 px-2">التصنيف</th>
+                            <th class="py-3 px-2">الوصف</th>
+                            <th class="py-3 px-2">المبلغ</th>
+                            <th class="py-3 px-2 text-center no-print">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody" class="text-sm divide-y divide-malaz-border/50">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 3: Budget Allocation View -->
+        <div id="view-budgets" class="hidden bg-malaz-card p-6 rounded-2xl border border-malaz-border shadow-lg space-y-6">
+            <div>
+                <h2 class="text-lg font-bold text-malaz-cream mb-1">حدود الميزانيات التقديرية</h2>
+                <p class="text-xs text-malaz-cream/60">حدد سقف الإنفاق لكل فئة لمراقبة مصاريفك وتجنب التجاوز المالي.</p>
+            </div>
+            
+            <div id="budgetProgressContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+        </div>
+
+    </main>
+
+    <!-- App Logic Script -->
+    <script>
+        const EXPENSE_CATEGORIES = ["طعام ومؤن", "فواتير وخدمات", "مواصلات ووقود", "إيجار وسكن", "صحة وأدوية", "تعليم وتربية", "ترفيه وتسوق", "أخرى"];
+        const INCOME_CATEGORIES = ["راتب شهري", "عمل إضافي", "استثمارات", "مكافأة", "أخرى"];
+
+        // Initial Data Starts Completely Zero/Empty
+        let appData = {
+            transactions: JSON.parse(localStorage.getItem('malaz_transactions')) || [],
+            budgets: JSON.parse(localStorage.getItem('malaz_budgets')) || {
+                "طعام ومؤن": 0,
+                "فواتير وخدمات": 0,
+                "مواصلات ووقود": 0,
+                "صحة وأدوية": 0,
+                "إيجار وسكن": 0,
+                "تعليم وتربية": 0,
+                "ترفيه وتسوق": 0,
+                "أخرى": 0
+            }
+        };
+
+        let expenseChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            updateCategoryDropdown();
+            renderAll();
+        });
+
+        function saveData() {
+            localStorage.setItem('malaz_transactions', JSON.stringify(appData.transactions));
+            localStorage.setItem('malaz_budgets', JSON.stringify(appData.budgets));
+            renderAll();
+        }
+
+        function formatSYP(amount) {
+            return new Intl.NumberFormat('ar-SY').format(amount) + ' ل.س';
+        }
+
+        function renderAll() {
+            renderSummaryCards();
+            renderChart();
+            renderTransactions();
+            renderBudgets();
+            generateAIInsights();
+        }
+
+        function updateCategoryDropdown() {
+            const type = document.getElementById('type').value;
+            const categorySelect = document.getElementById('category');
+            const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+            categorySelect.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function renderSummaryCards() {
+            const totalIncome = appData.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
+            const totalExpense = appData.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+            const netBalance = totalIncome - totalExpense;
+            const savingsRate = totalIncome > 0 ? Math.max(0, ((netBalance / totalIncome) * 100)).toFixed(1) : 0;
+
+            document.getElementById('totalIncomeText').innerText = formatSYP(totalIncome);
+            document.getElementById('totalExpenseText').innerText = formatSYP(totalExpense);
+            document.getElementById('netBalanceText').innerText = formatSYP(netBalance);
+            document.getElementById('savingsRateText').innerText = savingsRate + '%';
+        }
+
+        function handleAddTransaction(e) {
+            e.preventDefault();
+            const newTransaction = {
+                id: Date.now(),
+                type: document.getElementById('type').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value || 'بدون وصف',
+                date: document.getElementById('date').value
+            };
+
+            appData.transactions.unshift(newTransaction);
+            saveData();
+            document.getElementById('transactionForm').reset();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            updateCategoryDropdown();
+        }
+
+        function deleteTransaction(id) {
+            appData.transactions = appData.transactions.filter(t => t.id !== id);
+            saveData();
+        }
+
+        function renderTransactions() {
+            const tbody = document.getElementById('transactionsTableBody');
+            const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+
+            const filtered = appData.transactions.filter(t => 
+                t.category.toLowerCase().includes(search) || 
+                t.description.toLowerCase().includes(search)
+            );
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-malaz-cream/40">لا توجد معاملات مسجلة حالياً. أضف أول معاملة لبدء تتبع الميزانية.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(t => `
+                <tr class="hover:bg-malaz-bg/40 transition">
+                    <td class="py-3 px-2 text-xs text-malaz-cream/60">${t.date}</td>
+                    <td class="py-3 px-2">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold ${t.type === 'income' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+                            ${t.type === 'income' ? 'دخل' : 'مصروف'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-2 font-medium text-malaz-cream">${t.category}</td>
+                    <td class="py-3 px-2 text-malaz-cream/70">${t.description}</td>
+                    <td class="py-3 px-2 font-bold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatSYP(t.amount)}</td>
+                    <td class="py-3 px-2 text-center no-print">
+                        <button onclick="deleteTransaction(${t.id})" class="text-malaz-cream/40 hover:text-rose-400 p-1 transition"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderBudgets() {
+            const container = document.getElementById('budgetProgressContainer');
+            const expenseByCat = {};
+            
+            appData.transactions.filter(t => t.type === 'expense').forEach(t => {
+                expenseByCat[t.category] = (expenseByCat[t.category] || 0) + Number(t.amount);
+            });
+
+            container.innerHTML = EXPENSE_CATEGORIES.map(cat => {
+                const limit = appData.budgets[cat] || 0;
+                const spent = expenseByCat[cat] || 0;
+                const percentage = limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
+                
+                let colorClass = "bg-malaz-gold";
+                if(percentage > 85) colorClass = "bg-rose-500";
+                else if(percentage > 65) colorClass = "bg-amber-500";
+
+                return `
+                    <div class="p-4 rounded-xl border border-malaz-border bg-malaz-bg/50 space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-malaz-cream">${cat}</span>
+                            <div class="text-xs text-malaz-cream/70">
+                                <span>${formatSYP(spent)}</span> / 
+                                <input type="number" value="${limit}" onchange="updateBudgetLimit('${cat}', this.value)" class="w-28 bg-malaz-card border border-malaz-border text-malaz-cream rounded px-1 text-left font-semibold focus:outline-none focus:border-malaz-gold" placeholder="حدد السقف">
+                            </div>
+                        </div>
+                        <div class="w-full bg-malaz-card rounded-full h-2.5 overflow-hidden border border-malaz-border/40">
+                            <div class="${colorClass} h-2.5 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-malaz-cream/50 font-semibold">
+                            <span>نسبة الاستهلاك: ${percentage}%</span>
+                            <span>${limit > 0 ? (spent > limit ? 'تجاوز الميزانية!' : 'ضمن الحد') : 'غير محدد'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateBudgetLimit(category, value) {
+            appData.budgets[category] = parseFloat(value) || 0;
+            saveData();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            const expenses = appData.transactions.filter(t => t.type === 'expense');
+            
+            const categorySums = {};
+            expenses.forEach(t => {
+                categorySums[t.category] = (categorySums[t.category] || 0) + Number(t.amount);
+            });
+
+            const labels = Object.keys(categorySums);
+            const data = Object.values(categorySums);
+
+            if (expenseChart) expenseChart.destroy();
+
+            expenseChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length > 0 ? labels : ['لا توجد مصاريف مدخلة'],
+                    datasets: [{
+                        data: data.length > 0 ? data : [1],
+                        backgroundColor: labels.length > 0 
+                            ? ['#f4ad42', '#f43f5e', '#10b981', '#6366f1', '#14b8a6', '#ec4899', '#8b5cf6', '#64748b']
+                            : ['#1e3d37']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Cairo' }, color: '#f3ebd9' } }
+                    }
+                }
+            });
+        }
+
+        function generateAIInsights() {
+            const container = document.getElementById('aiInsightsContainer');
+            const totalIncome = appData.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
+            const totalExpense = appData.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+
+            if(totalIncome === 0 && totalExpense === 0) {
+                container.innerHTML = `<p><i class="fa-solid fa-info-circle ml-1"></i> أهلاً بك في تطبيق مَلاَذ! أضف أوّل معاملة (دخل أو مصروف) لبدء التحليل المالي الذكي.</p>`;
+                return;
+            }
+
+            if(totalIncome === 0) {
+                container.innerHTML = `<p class="text-amber-300"><i class="fa-solid fa-triangle-exclamation ml-1"></i> تمت إضافة مصاريف، يُرجى تسجيل الدخل للحصول على تحليل مالي مخصص.</p>`;
+                return;
+            }
+
+            const ratio = ((totalExpense / totalIncome) * 100).toFixed(0);
+            let insightHtml = "";
+
+            if (ratio > 90) {
+                insightHtml += `<p class="text-rose-300 font-semibold"><i class="fa-solid fa-triangle-exclamation ml-1"></i> تنبيه: تنفق حالياً ${ratio}% من إجمالي دخلك. يُنصح بضبط المصاريف الأساسية والحد من الهدر.</p>`;
+            } else if (ratio < 60) {
+                insightHtml += `<p class="text-emerald-300 font-semibold"><i class="fa-solid fa-circle-check ml-1"></i> ممتاز! أدائك المالي متزن للغاية، وتوفر ${100 - ratio}% من دخلك. يمكنك توجيه هذا الفائض للتوفير المستقبلي.</p>`;
+            } else {
+                insightHtml += `<p><i class="fa-solid fa-thumbs-up ml-1 text-malaz-gold"></i> وضعك المالي مستقر حالياً بنسبة إنفاق ${ratio}%. حاول الحفاظ على معدل توفير لا يقل عن 20% شهرياً.</p>`;
+            }
+
+            container.innerHTML = insightHtml;
+        }
+
+        function switchTab(tabName) {
+            ['dashboard', 'transactions', 'budgets'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('border-b-2', 'border-malaz-gold', 'text-malaz-gold');
+                document.getElementById(`tab-${t}`).classList.add('text-malaz-cream/60');
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('border-b-2', 'border-malaz-gold', 'text-malaz-gold');
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `malaz-backup-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importData(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if(imported.transactions && imported.budgets) {
+                        appData = imported;
+                        saveData();
+                        alert("تمت استعادة بيانات مَلاَذ بنجاح!");
+                    }
+                } catch(err) {
+                    alert("ملف غير صالح.");
+                }
+            };
+            fileReader.readAsText(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 {
-  "name": "مَلاَذ - إدارة الميزانية",
+  "name": "مَلاَذ - إدارة الميزانية المنزلية",
   "short_name": "مَلاَذ",
+  "description": "تطبيق متكامل لإدارة المصاريف والدخل بالليرة السورية مع مزامنة سحابية عبر جوجل درايف",
   "start_url": "https://damascuspre8-arch.github.io/Malaz-budget/",
   "scope": "https://damascuspre8-arch.github.io/Malaz-budget/",
   "display": "standalone",

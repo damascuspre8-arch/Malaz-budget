@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Google API Client Library -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
     <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
@@ -48,7 +52,7 @@
 
     <!-- Header / Navigation -->
     <header class="bg-malaz-card border-b border-malaz-border shadow-xl sticky top-0 z-50 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-3 space-x-reverse">
                 <img src="malaz-icon-square.svg" alt="Malaz Icon" class="w-10 h-10 rounded-xl shadow-md border border-malaz-gold/30 object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%230d1f1c\'><rect width=\'100\' height=\'100\' fill=\'%230d1f1c\'/><path d=\'M25 80 V50 A25 25 0 0 1 75 50 V80 M35 80 V50 A15 15 0 0 1 65 50 V80\' stroke=\'%23f3ebd9\' stroke-width=\'8\' fill=\'none\' stroke-linecap=\'round\'/><circle cx=\'50\' cy=\'60\' r=\'7\' fill=\'%23f4ad42\'/></svg>'">
                 <div>
@@ -56,22 +60,38 @@
                         <h1 class="text-xl font-black text-malaz-cream tracking-wide">مَلاَذ</h1>
                         <span class="text-xs font-bold text-malaz-gold tracking-widest uppercase">MALAZ</span>
                     </div>
-                    <p class="text-[10px] text-malaz-cream/60">نسأل الله البركة برزقكم</p>
+                    <p class="text-[10px] text-malaz-cream/60">إدارة الميزانية بالليرة السورية + مزامنة Google Drive</p>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex items-center space-x-2 space-x-reverse text-sm">
-                <button onclick="exportData()" class="bg-malaz-bg hover:bg-malaz-accent text-malaz-cream px-3 py-1.5 rounded-xl border border-malaz-border flex items-center space-x-1.5 space-x-reverse transition">
+            <!-- Action & Cloud Sync Buttons -->
+            <div class="flex items-center flex-wrap gap-2 text-sm">
+                <!-- Google Sync Controls -->
+                <div id="authContainer">
+                    <button onclick="handleAuthClick()" id="authButton" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-1.5 rounded-xl transition flex items-center space-x-1.5 space-x-reverse shadow-md text-xs">
+                        <i class="fa-brands fa-google text-xs"></i>
+                        <span>ربط Google Drive</span>
+                    </button>
+                </div>
+                <div id="syncContainer" class="hidden flex items-center space-x-2 space-x-reverse">
+                    <button onclick="syncToDrive()" title="رفع وحفظ للسحابة" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 space-x-reverse text-xs shadow-md">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>مزامنة للسحابة</span>
+                    </button>
+                    <button onclick="syncFromDrive()" title="جلب من السحابة" class="bg-malaz-bg hover:bg-malaz-accent text-malaz-cream px-3 py-1.5 rounded-xl border border-malaz-border transition flex items-center space-x-1.5 space-x-reverse text-xs">
+                        <i class="fa-solid fa-cloud-arrow-down text-malaz-gold"></i>
+                        <span>استرجاع</span>
+                    </button>
+                    <button onclick="handleSignoutClick()" title="تسجيل خروج" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 p-2 rounded-xl border border-rose-500/30 transition text-xs">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <button onclick="exportData()" class="bg-malaz-bg hover:bg-malaz-accent text-malaz-cream px-3 py-1.5 rounded-xl border border-malaz-border flex items-center space-x-1.5 space-x-reverse transition text-xs">
                     <i class="fa-solid fa-download text-xs text-malaz-gold"></i>
-                    <span class="hidden sm:inline">حفظ نسخة</span>
+                    <span class="hidden sm:inline">نسخة محلية</span>
                 </button>
-                <label class="bg-malaz-bg hover:bg-malaz-accent text-malaz-cream px-3 py-1.5 rounded-xl border border-malaz-border flex items-center space-x-1.5 space-x-reverse cursor-pointer transition">
-                    <i class="fa-solid fa-upload text-xs text-malaz-gold"></i>
-                    <span class="hidden sm:inline">استعادة</span>
-                    <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
-                </label>
-                <button onclick="window.print()" class="bg-malaz-gold hover:bg-amber-500 text-malaz-bg font-bold px-3.5 py-1.5 rounded-xl transition flex items-center space-x-1.5 space-x-reverse shadow-lg shadow-malaz-gold/10">
+                <button onclick="window.print()" class="bg-malaz-gold hover:bg-amber-500 text-malaz-bg font-bold px-3.5 py-1.5 rounded-xl transition flex items-center space-x-1.5 space-x-reverse shadow-lg shadow-malaz-gold/10 text-xs">
                     <i class="fa-solid fa-print text-xs"></i>
                     <span class="hidden sm:inline">طباعة</span>
                 </button>
@@ -235,12 +255,19 @@
 
     </main>
 
-    <!-- App Logic Script -->
+    <!-- App Logic & Google Drive Sync Script -->
     <script>
+        const CLIENT_ID = '767174049518-qp390srtjaqih4botehk0l9fqlrur6es.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+        const BACKUP_FILE_NAME = 'malaz_budget_data.json';
+
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
         const EXPENSE_CATEGORIES = ["طعام ومؤن", "فواتير وخدمات", "مواصلات ووقود", "إيجار وسكن", "صحة وأدوية", "تعليم وتربية", "ترفيه وتسوق", "أخرى"];
         const INCOME_CATEGORIES = ["راتب شهري", "عمل إضافي", "استثمارات", "مكافأة", "أخرى"];
 
-        // Initial Data Starts Completely Zero/Empty
         let appData = {
             transactions: JSON.parse(localStorage.getItem('malaz_transactions')) || [],
             budgets: JSON.parse(localStorage.getItem('malaz_budgets')) || {
@@ -263,9 +290,144 @@
             renderAll();
         });
 
-        function saveData() {
+        // Google APIs Initialization
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            });
+            gapiInited = true;
+        }
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // defined later
+            });
+            gisInited = true;
+        }
+
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) {
+                    throw (resp);
+                }
+                document.getElementById('authContainer').classList.add('hidden');
+                document.getElementById('syncContainer').classList.remove('hidden');
+                // Auto sync or fetch on login
+                syncFromDrive(true);
+            };
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    gapi.client.setToken('');
+                    document.getElementById('authContainer').classList.remove('hidden');
+                    document.getElementById('syncContainer').classList.add('hidden');
+                });
+            }
+        }
+
+        // Google Drive Operations (using AppData folder for privacy and safety)
+        async function syncToDrive() {
+            try {
+                const fileContent = JSON.stringify(appData);
+                const metadata = {
+                    name: BACKUP_FILE_NAME,
+                    mimeType: 'application/json',
+                    parents: ['appDataFolder']
+                };
+
+                // Check if file already exists in appDataFolder
+                const response = await gapi.client.drive.files.list({
+                    q: `name='${BACKUP_FILE_NAME}' and 'appDataFolder' in parents`,
+                    spaces: 'appDataFolder',
+                    fields: 'files(id, name)',
+                });
+
+                const files = response.result.files;
+                let fileId = files && files.length > 0 ? files[0].id : null;
+
+                const accessToken = gapi.client.getToken().access_token;
+
+                if (fileId) {
+                    // Update existing file
+                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                        method: 'PATCH',
+                        headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                        body: fileContent
+                    });
+                    alert('تمت مزامنة وحفظ البيانات بنجاح على Google Drive!');
+                } else {
+                    // Create new file
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', new Blob([fileContent], { type: 'application/json' }));
+
+                    await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                        body: form
+                    });
+                    alert('تم إنشاء نسخة سحابية جديدة ومزامنتها بنجاح!');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء المزامنة مع Google Drive.');
+            }
+        }
+
+        async function syncFromDrive(isSilent = false) {
+            try {
+                const response = await gapi.client.drive.files.list({
+                    q: `name='${BACKUP_FILE_NAME}' and 'appDataFolder' in parents`,
+                    spaces: 'appDataFolder',
+                    fields: 'files(id, name)',
+                });
+
+                const files = response.result.files;
+                if (files && files.length > 0) {
+                    const fileId = files[0].id;
+                    const fileResponse = await gapi.client.drive.files.get({
+                        fileId: fileId,
+                        alt: 'media'
+                    });
+                    
+                    if (fileResponse.result) {
+                        appData = fileResponse.result;
+                        saveDataLocal();
+                        renderAll();
+                        if (!isSilent) alert('تم استرجاع ومزامنة البيانات من Google Drive بنجاح!');
+                    }
+                } else {
+                    if (!isSilent) alert('لا توجد نسخة سحابية مخزنة مسبقاً، سيتم رفع النسخة الحالية.');
+                    syncToDrive();
+                }
+            } catch (err) {
+                console.error(err);
+                if (!isSilent) alert('فشل استرجاع البيانات من السحابة.');
+            }
+        }
+
+        function saveDataLocal() {
             localStorage.setItem('malaz_transactions', JSON.stringify(appData.transactions));
             localStorage.setItem('malaz_budgets', JSON.stringify(appData.budgets));
+        }
+
+        function saveData() {
+            saveDataLocal();
             renderAll();
         }
 
@@ -482,23 +644,9 @@
             downloadAnchor.click();
             downloadAnchor.remove();
         }
-
-        function importData(event) {
-            const fileReader = new FileReader();
-            fileReader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if(imported.transactions && imported.budgets) {
-                        appData = imported;
-                        saveData();
-                        alert("تمت استعادة بيانات مَلاَذ بنجاح!");
-                    }
-                } catch(err) {
-                    alert("ملف غير صالح.");
-                }
-            };
-            fileReader.readAsText(event.target.files[0]);
-        }
     </script>
+    <!-- Load Google API scripts -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
 </html>

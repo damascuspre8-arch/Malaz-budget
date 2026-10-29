@@ -1,0 +1,17 @@
+{
+  "name": "مَلاَذ - إدارة الميزانية المنزلية",
+  "short_name": "مَلاَذ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d1f1c",
+  "theme_color": "#0d1f1c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "malaz-icon-square.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,14 +1,15 @@
 {
   "name": "مَلاَذ - إدارة الميزانية",
   "short_name": "مَلاَذ",
-  "start_url": "./index.html",
+  "start_url": "https://damascuspre8-arch.github.io/Malaz-budget/",
+  "scope": "https://damascuspre8-arch.github.io/Malaz-budget/",
   "display": "standalone",
   "background_color": "#0d1f1c",
   "theme_color": "#0d1f1c",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "malaz-icon-square.svg",
+      "src": "https://damascuspre8-arch.github.io/Malaz-budget/malaz-icon-square.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

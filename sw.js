@@ -1,16 +1,12 @@
-const CACHE_NAME = 'malaz-v1';
+const CACHE_NAME = 'malaz-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './malaz-icon-square.svg',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap'
+  './malaz-icon-square.svg'
 ];
 
-// تثبيت التخزين المؤقت
+// 1. تثبيت وتخزين الملفات الأساسية
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,7 +16,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// تفعيل وتحكم بالنسخ القديمة
+// 2. تفعيل وحذف النسخ القديمة
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -36,7 +32,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// تشغيل الملفات من الذاكرة عند انقطاع الإنترنت
+// 3. جلب الملفات من الكاش عند انقطاع الإنترنت
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

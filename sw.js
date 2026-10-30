@@ -4,10 +4,13 @@ const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './malaz-icon-square.svg',
-  'https://cdn.tailwindcss.com'
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap'
 ];
 
-// 1. تثبيت الـ Service Worker وتخزين الملفات
+// تثبيت التخزين المؤقت
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -17,7 +20,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// 2. تفعيل التخزين وحذف الباقات القديمة
+// تفعيل وتحكم بالنسخ القديمة
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -33,7 +36,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// 3. قراءة الملفات من الذاكرة المحلية عند قطع الإنترنت
+// تشغيل الملفات من الذاكرة عند انقطاع الإنترنت
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
@@ -41,7 +44,6 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // في حال انقطاع الشبكة وعدم وجود الملف
         return caches.match('./index.html');
       });
     })

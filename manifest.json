@@ -3,10 +3,19 @@
   "short_name": "مَلاَذ",
   "start_url": "./index.html",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0d1f1c",
   "theme_color": "#0d1f1c",
   "orientation": "portrait",
+  "categories": ["finance", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "malaz-icon-square.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "malaz-icon-square.svg",
       "sizes": "512x512",
